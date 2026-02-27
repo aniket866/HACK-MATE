@@ -4,6 +4,11 @@ export interface Project {
     name: string;
     problem: string;
     timeLeft: string;
+    type?: string;
+    prizeCategory?: string;
+    judgingFocus?: string[];
+    teamSize?: string;
+    isTeam?: boolean;
     createdAt: number;
     lastModified: number;
 }
@@ -12,6 +17,9 @@ export interface ProjectState {
     currentStageId?: string;
     checklist: Record<string, Record<number, boolean>>; // stageId -> { index -> bool }
     customPrompts: Record<string, string>; // stageId -> promptContent
+    comments: Record<string, { user: string; text: string; time: number }[]>; // stageId -> comments
+    assignments: Record<string, string>; // stageId -> userName
+    aiInsights: Record<string, string>; // stageId -> result
 }
 
 const STORAGE_KEYS = {
@@ -43,15 +51,15 @@ export const store = {
     getProjectState: (projectId: string): ProjectState => {
         try {
             const allStates = JSON.parse(localStorage.getItem(STORAGE_KEYS.STATE) || '{}');
-            return allStates[projectId] || { checklist: {}, customPrompts: {} };
+            return allStates[projectId] || { checklist: {}, customPrompts: {}, comments: {}, assignments: {}, aiInsights: {} };
         } catch {
-            return { checklist: {}, customPrompts: {} };
+            return { checklist: {}, customPrompts: {}, comments: {}, assignments: {}, aiInsights: {} };
         }
     },
 
     saveProjectState: (projectId: string, state: Partial<ProjectState>) => {
         const allStates = JSON.parse(localStorage.getItem(STORAGE_KEYS.STATE) || '{}');
-        const currentState = allStates[projectId] || { checklist: {}, customPrompts: {} };
+        const currentState = allStates[projectId] || { checklist: {}, customPrompts: {}, comments: {}, assignments: {}, aiInsights: {} };
         allStates[projectId] = { ...currentState, ...state };
         localStorage.setItem(STORAGE_KEYS.STATE, JSON.stringify(allStates));
     },
@@ -69,6 +77,29 @@ export const store = {
         const state = store.getProjectState(projectId);
         store.saveProjectState(projectId, {
             customPrompts: { ...state.customPrompts, [stageId]: content }
+        });
+    },
+
+    addComment: (projectId: string, stageId: string, user: string, text: string) => {
+        const state = store.getProjectState(projectId);
+        const stageComments = state.comments[stageId] || [];
+        const newComments = [...stageComments, { user, text, time: Date.now() }];
+        store.saveProjectState(projectId, {
+            comments: { ...state.comments, [stageId]: newComments }
+        });
+    },
+
+    updateAssignment: (projectId: string, stageId: string, userName: string) => {
+        const state = store.getProjectState(projectId);
+        store.saveProjectState(projectId, {
+            assignments: { ...state.assignments, [stageId]: userName }
+        });
+    },
+
+    saveAIInsight: (projectId: string, stageId: string, result: string) => {
+        const state = store.getProjectState(projectId);
+        store.saveProjectState(projectId, {
+            aiInsights: { ...state.aiInsights, [stageId]: result }
         });
     },
 
