@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { ExternalLink, Copy, Check, ArrowLeft, Users, GitBranch, Download, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ExternalLink, Copy, Check, ArrowLeft, GitBranch, AlertCircle, ChevronDown, ChevronUp, MessageSquare, Send } from 'lucide-react';
 import { STAGES } from './StageSelection';
-import { store } from '../lib/store';
+import { store, Project } from '../lib/store';
+import { AntigravityGuide } from './AntigravityGuide';
+import { PromptModal } from './PromptModal';
 
 interface StageDetailProps {
     stageId: string;
     onBack: () => void;
-    problemStatement: string;
-    projectId: string; // Added prop
+    project: Project;
 }
 
 // Data mapping
@@ -27,25 +28,30 @@ const STAGE_DATA: Record<string, {
         toolName: "ChatGPT / Claude",
         toolWhy: "Best for rapid idea generation and refining logic gaps.",
         toolUrl: "https://chat.openai.com",
-        promptTemplate: `Act as a World-Class Product Manager & Hackathon Judge.
-I am building a project for a hackathon.
-Problem Statement: [PROBLEM]
+        promptTemplate: `Act as a Technical Product Manager.
+Objective: Define a feasible hackathon project scope.
 
-Goal: Win the hackathon by showing innovation, technical complexity, and user value.
+Problem: [PROBLEM]
+Track/Category: [CATEGORY]
 
-Please provide a comprehensive Product Spec:
-1. Core Value Prop: 1 sentence pitch.
-2. 3 "Wow" Features: Unique features that minimal competitors have.
-3. Technical "X-Factor": One complex technical component (e.g., real-time sync, AI agent, blockchain auth) that impresses judges.
-4. MVP Scope: What exactly to build in 24 hours (ignore nice-to-haves).
-5. User Flow: Step-by-step walkthough of the demo.`,
+1. **Solution Concepts:**
+   Generate 3 distinct technical approaches to solve this within the [CATEGORY] track.
+   - Option A: Minimalist (Solved via simple form/data).
+   - Option B: Integrated (Solved via API integration/automation).
+   - Option C: Data-Driven (Solved via analysis/AI).
+
+2. **Feasibility Check:**
+   For the best option above, list the 3 biggest technical risks (e.g., "latency", "scraping difficulty").
+
+3. **Recommendation:**
+   Which one can realistically be built and polished in [TIME] hours? Why?`,
         checklist: [
             "Define core problem statement",
             "Identify target user persona",
             "Brainstorm 3 key features",
             "Define the 'X-factor' tech component",
             "Draft user journey flow",
-            "Decide on MVP scope (must-haves vs nice-to-haves)",
+            "Decide on MVP scope",
             "Create a 1-sentence elevator pitch"
         ],
         alternatives: [
@@ -55,26 +61,34 @@ Please provide a comprehensive Product Spec:
         docsUrl: "https://platform.openai.com/docs/guides/prompt-engineering"
     },
     research: {
-        expl: "Validate if this exists. Find competitors. Find technical feasibility.",
+        expl: "Validate technical feasibility and market gap.",
         toolName: "Perplexity / Google",
         toolWhy: "Real-time search to check if your idea is unique.",
         toolUrl: "https://www.perplexity.ai",
-        promptTemplate: `Act as a Market Research Analyst.
-I am solving: [PROBLEM]
+        promptTemplate: `Act as a Solutions Architect.
+Objective: Validate technical feasibility and market gap.
 
-Please perform a deep-dive analysis:
-1. Direct Competitors: List 3 real startups/tools solving this.
-2. Gap Analysis: What are they missing? (UX speed, AI features, pricing, etc.)
-3. Technical Feasibility: specific APIs or open-source libraries I can use to build this faster.
-4. The "Hook": One insight that makes my solution 10x better than the status quo.`,
+Problem: [PROBLEM]
+
+1. **Existing Solutions:**
+   List 3 direct competitors. For each, state their weakness.
+
+2. **Open Source & APIs:**
+   List 3 GitHub repositories or APIs we can use for [CATEGORY].
+
+3. **Differentiation:**
+   What is the ONE technical feature we will build that judges will love?`,
         checklist: [
             "Identify 3 direct competitors",
             "List weakness of each competitor",
             "Verify required APIs are available/free",
             "Search for existing open-source repos",
-            "Confirm technical feasibility of core feature",
-            "Define your unique value proposition (UVP)",
-            "Check for any legal/compliance blockers"
+            "Confirm technical feasibility",
+            "Define your UVP"
+        ],
+        alternatives: [
+            { name: "Google Trends", why: "Validate search volume", url: "https://trends.google.com" },
+            { name: "ProductHunt", why: "Find recent launches", url: "https://producthunt.com" }
         ],
     },
     design: {
@@ -82,122 +96,129 @@ Please perform a deep-dive analysis:
         toolName: "Figma",
         toolWhy: "Industry standard for interface design.",
         toolUrl: "https://www.figma.com",
-        promptTemplate: `Act as a Senior UI/UX Designer at Linear/Airbnb.
-I need a design system and UI layout for: [PROBLEM]
+        promptTemplate: `Act as a Lead UI Engineer.
+Objective: Define a clean, implementable design system for a [CATEGORY] project.
 
-Provide:
-1. Color Palette: Hex codes for Primary, Secondary, Accent, and Background (Dark/Light mode).
-2. Typography: Font pairing (Heading & Body) recommendations.
-3. Key Screens: Bulleted list of elements for Landing Page, Dashboard, and Core Action flow.
-4. Micro-interactions: 2 specific animation ideas to make it feel premium.
-5. Image Generation Prompt: A prompt I can use in Midjourney to generate a hero image for this app.`,
+1. **Component Stack:**
+   Recommend a specific React component library (e.g., Shadcn/UI, Mantine).
+
+2. **Core Views:**
+   List the 4 essential screens.
+
+3. **Judging Focus:**
+   How can we emphasize [FOCUS] in the UI?`,
         checklist: [
             "Choose a primary color palette",
-            "Select font pairings (Heading/Body)",
+            "Select font pairings",
             "Design the App Logo / Icon",
-            "Mockup the Landing Page hero section",
+            "Mockup the Landing Page",
             "Mockup the Core Feature dashboard",
-            "Design specific micro-interactions (hover, loading)",
-            "Export all assets for developers"
+            "Design loading states"
         ],
-        docsUrl: "https://help.figma.com/hc/en-us"
+        alternatives: [
+            { name: "Penpot", why: "Free Figma alternative", url: "https://penpot.app" },
+            { name: "Excalidraw", why: "Great for rough sketches", url: "https://excalidraw.com" }
+        ]
     },
     build: {
         expl: "Code the frontend and connect the backend. Speed is key.",
         toolName: "Bolt.new / Replit",
         toolWhy: "Instant dev environment deployment.",
         toolUrl: "https://bolt.new",
-        alternatives: [
-            { name: "Vercel", why: "Best for deploying Next.js", url: "https://vercel.com" },
-            { name: "Replit", why: "Good for Python/Node backends", url: "https://replit.com" }
-        ],
         warning: "Don't spend more than 1 hour on setup. Use a template.",
-        promptTemplate: `Act as a 10x Full Stack Developer.
-Stack: React, Tailwind, Supabase/Firebase (optional), OpenAI API.
-Project: [PROBLEM]
+        promptTemplate: `Act as a Senior Engineering Lead.
+Objective: Define the data model and API surface for [CATEGORY].
 
-Generate a step-by-step implementation plan for the MVP:
-1. Folder Structure: File tree for a scalable React app.
-2. Key Components: List of reusable components needed.
-3. State Management: How to handle data flow.
-4. Database Schema: Simple JSON structure or Table design.
-5. Critical Code Snippets: The logic for the "Core Feature" (e.g., the AI wrapper or main algorithm).`,
+1. **Tech Stack:**
+   Recommend a stack for [TYPE] (Online/In-Person).
+   [TYPE_SPECIFIC]
+
+2. **Data Model:**
+   Define core entities.
+
+3. **Implementation Steps:**
+   Step 1: Setup.
+   Step 2: Database.
+   Step 3: Core Logic.`,
         checklist: [
             "Initialize Git repository",
-            "Set up project scaffolding (Vite/Next.js)",
-            "Install Tailwind CSS & core libraries",
+            "Set up project scaffolding",
+            "Install Tailwind CSS",
             "Build reusable UI components",
-            "Implement Routing / Navigation",
+            "Implement Routing",
             "Connect Backend / APIs",
-            "Implement State Management",
-            "Test Core Feature end-to-end"
+            "Test Core Feature"
         ],
+        alternatives: [
+            { name: "Vercel", why: "Best for deployment", url: "https://vercel.com" },
+            { name: "Firebase/Supabase", why: "Fastest backend setup", url: "https://supabase.com" }
+        ]
     },
     git: {
         expl: "Version control is mandatory. Don't lose code.",
         toolName: "GitHub",
         toolWhy: "Industry standard source control.",
         toolUrl: "https://github.com",
-        promptTemplate: "N/A", // Handled by Git Module
+        promptTemplate: `Act as a Release Manager.
+Objective: Ensure code quality for a [SIZE] team.
+
+1. **Branching:** Strategy for [SIZE].
+2. **Commit Standards:** Provide a template.`,
         checklist: ["Initialize Repo", "First Commit", "Invite Team"],
+        alternatives: [
+            { name: "GitLab", why: "Built-in CI/CD", url: "https://gitlab.com" }
+        ]
     },
     pitch: {
         expl: "The pitch is 50% of the score. Make it compelling.",
         toolName: "Gamma",
         toolWhy: "AI-generated slides in seconds.",
         toolUrl: "https://gamma.app",
-        promptTemplate: `Act as a Startup Founder pitching to YC.
-Project: [PROBLEM]
+        promptTemplate: `Act as a Judge.
+Objective: Create a persuasive presentation focusing on [FOCUS].
 
-Write a winning 2-minute pitch script:
-1. The Hook (0:00-0:15): A relatable problem statement.
-2. The Solution (0:15-0:45): High-level explanation of the app "Like X for Y".
-3. The Demo (0:45-1:30): What exactly to show on screen (Don't show login, show the magic).
-4. The Tech (1:30-1:45): Briefly mention the stack and the "hard part".
-5. The Ask (1:45-2:00): Why this matters.
-
-Also suggest 5 slide titles for the deck.`,
+1. Outline 8 slides for a [CATEGORY] project.
+2. What feature should we highlight to stand out?`,
         checklist: [
             "Draft the 2-minute script",
             "Create 'Problem' slide",
             "Create 'Solution' slide",
-            "Record Demo Video (Screen recording)",
+            "Record Demo Video",
             "Embed Demo into slides",
-            "Create 'Future Roadmap' slide",
             "Practice pitch 5 times"
         ],
+        alternatives: [
+            { name: "Canva", why: "Beautiful templates", url: "https://canva.com" },
+            { name: "Google Slides", why: "Best for collaboration", url: "https://slides.google.com" }
+        ]
     },
     submit: {
         expl: "Record the demo and submit. Don't miss the deadline.",
         toolName: "Loom",
         toolWhy: "Fast, reliable screen recording.",
         toolUrl: "https://www.loom.com",
-        promptTemplate: `Act as a Video Director.
-We need to record a 2-minute demo video for [PROBLEM].
+        promptTemplate: `Act as a QC Engineer.
+Verify submission readiness for [CATEGORY] track.
 
-Create a shot-list and script:
-1. Scene 1 (FaceCam): Intro and "The Pain".
-2. Scene 2 (Screen Recording): The "Aha!" moment (the main feature working).
-3. Scene 3 (Screen Recording): A secondary feature or technical highlight.
-4. Scene 4 (Slide): Tech Stack & Future Roadmap.
-5. Scene 5 (FaceCam): Conclusion.
-
-Give me the exact voiceover text for each scene.`,
+1. **Demo Script:** 0:00-2:00 breakdown.
+2. **Final Polish:** High ROI UI fixes.`,
         checklist: [
-            "Record finalized 2-min demo video",
-            "Edit video (trim dead air)",
-            "Upload to YouTube / Loom",
-            "Write Devpost project description",
-            "Add screenshots to submission",
-            "Double check GitHub repo visibility",
+            "Record 2-min demo video",
+            "Edit video",
+            "Upload to YouTube/Loom",
+            "Write Devpost description",
             "Submit before deadline!"
         ],
+        alternatives: [
+            { name: "OBS Studio", why: "Pro screen recording", url: "https://obsproject.com" }
+        ]
     }
 };
 
-export function StageDetail({ stageId, onBack, problemStatement, projectId }: StageDetailProps) {
+export function StageDetail({ stageId, onBack, project }: StageDetailProps) {
     const data = STAGE_DATA[stageId];
     const stageInfo = STAGES.find(s => s.id === stageId);
+    const projectId = project.id;
 
     // Persisted State
     const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
@@ -205,24 +226,20 @@ export function StageDetail({ stageId, onBack, problemStatement, projectId }: St
     const [customPrompt, setCustomPrompt] = useState<string | null>(null);
     const [showAlternatives, setShowAlternatives] = useState(false);
 
+    // Comments State
+    const [comments, setComments] = useState<{ user: string; text: string; time: number }[]>([]);
+    const [newComment, setNewComment] = useState('');
+    const [showNamePrompt, setShowNamePrompt] = useState(false);
+    const [showCopyFeedback, setShowCopyFeedback] = useState(false);
+
     // Initial load from Store
     useEffect(() => {
         const state = store.getProjectState(projectId);
-
-        // Load Checklist
-        const savedChecklist = state.checklist[stageId] || {};
-        setCheckedItems(savedChecklist);
-
-        // Load Custom Prompt
-        if (state.customPrompts[stageId]) {
-            setCustomPrompt(state.customPrompts[stageId]);
-        } else {
-            setCustomPrompt(null);
-        }
-
+        setCheckedItems(state.checklist[stageId] || {});
+        setCustomPrompt(state.customPrompts[stageId] || null);
+        setComments(state.comments[stageId] || []);
     }, [stageId, projectId]);
 
-    // Calculate progress (visual only, data already saved on check)
     useEffect(() => {
         if (!data) return;
         const total = data.checklist.length;
@@ -242,9 +259,16 @@ export function StageDetail({ stageId, onBack, problemStatement, projectId }: St
         store.saveCustomPrompt(projectId, stageId, newVal);
     };
 
-    const handleResetPrompt = () => {
-        setCustomPrompt(null);
-        store.saveCustomPrompt(projectId, stageId, ""); // Clear in store
+    const handleAddComment = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newComment.trim()) return;
+        setShowNamePrompt(true);
+    };
+
+    const submitComment = (user: string) => {
+        store.addComment(projectId, stageId, user, newComment || "Anonymous");
+        setComments(prev => [...prev, { user, text: newComment, time: Date.now() }]);
+        setNewComment('');
     };
 
     const handleDownload = () => {
@@ -255,20 +279,16 @@ export function StageDetail({ stageId, onBack, problemStatement, projectId }: St
 
         const content = `
 HACKATHON COPILOT - ${stageInfo?.title.toUpperCase()}
+Project: ${project.name}
 --------------------------------------------------
 Recommended Tool: ${data.toolName}
 Use it here: ${data.toolUrl}
-
-YOUR STARTING PROMPT:
----------------------
-${data.promptTemplate.replace('[PROBLEM]', problemStatement)}
 
 CHECKLIST STATUS:
 -----------------
 ${checkedList}
 
 Progress: ${Math.round(progress)}%
-Generated by Hackathon Copilot
         `.trim();
 
         const blob = new Blob([content], { type: 'text/plain' });
@@ -282,310 +302,197 @@ Generated by Hackathon Copilot
         URL.revokeObjectURL(url);
     };
 
-    const [copied, setCopied] = useState(false);
+    if (stageId === 'antigravity') return <AntigravityGuide onBack={onBack} />;
+    if (!data) return <div className="p-20 text-center">Invalid Stage</div>;
 
-    // If Git stage, render Git Module
-    if (stageId === 'git') {
-        return <GitModule onBack={onBack} />;
+    // Dynamic Prompt Injection
+    let basePrompt = data.promptTemplate
+        .replace('[PROBLEM]', project.problem)
+        .replace('[CATEGORY]', project.prizeCategory || 'General')
+        .replace('[TIME]', project.timeLeft)
+        .replace('[FOCUS]', (project.judgingFocus || []).join(', '))
+        .replace('[SIZE]', project.teamSize || 'Solo')
+        .replace('[TYPE]', project.type || 'Online');
+
+    // Type specific additions for Build stage
+    if (stageId === 'build') {
+        let typeSpecific = project.type === 'In-Person Event'
+            ? "Since this is in-person, avoid heavy cluster setups (Kubernetes). Use Vercel, Netlify, or Railway for instant deployment."
+            : "Since this is online, you have more room for complex backend setup if needed, but prioritize speed.";
+
+        if (project.prizeCategory === 'AI/ML Track') {
+            typeSpecific += " Use FastAPI for python backend and Vercel AI SDK for streaming.";
+        } else if (project.prizeCategory === 'Web3/Blockchain') {
+            typeSpecific += " Use Hardhat/Foundry for smart contracts and Ethers.js for frontend integration.";
+        }
+        basePrompt = basePrompt.replace('[TYPE_SPECIFIC]', typeSpecific);
     }
 
-    if (!data) return <div>Inavlid Stage</div>;
-
-    const basePrompt = data.promptTemplate.replace('[PROBLEM]', problemStatement);
     const displayPrompt = customPrompt !== null ? customPrompt : basePrompt;
     const isEdited = customPrompt !== null && customPrompt !== basePrompt;
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(displayPrompt);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            {/* Header */}
-            <header className="bg-white border-b border-gray-100 py-4 px-6 flex items-center justify-between sticky top-0 z-10">
-                <div className="flex items-center gap-4">
-                    <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900">
-                        <ArrowLeft className="w-5 h-5" />
+        <div className="min-h-screen bg-white text-gray-900">
+            <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <ArrowLeft className="w-5 h-5 text-gray-600" />
                     </button>
-                    <h1 className="text-xl font-bold flex items-center gap-2 text-gray-900">
-                        {stageInfo?.title}
-                    </h1>
+                    <div className="flex items-center gap-2 font-bold text-lg">
+                        <h1 className="text-xl font-extrabold">{stageInfo?.title}</h1>
+                    </div>
+                    <button onClick={handleDownload} className="bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-xl text-sm font-bold transition-all">
+                        Download Plan
+                    </button>
                 </div>
-                <button
-                    onClick={handleDownload}
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors"
-                >
-                    <Download className="w-4 h-4" /> Download Plan
-                </button>
-            </header>
+            </nav>
 
-            <main className="flex-1 p-6 sm:p-8 max-w-5xl mx-auto w-full space-y-8">
-                {/* Explanation */}
-                <section>
-                    <p className="text-lg text-gray-600 leading-relaxed font-medium">
-                        {data.expl}
-                    </p>
-                    {data.warning && (
-                        <div className="mt-4 flex items-start gap-3 p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800">
-                            <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                            <span>{data.warning}</span>
-                        </div>
-                    )}
-                </section>
+            <main className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
+                <div className="lg:col-span-2 space-y-12">
+                    <section>
+                        <h2 className="text-3xl font-extrabold mb-4">Phase Strategy</h2>
+                        <p className="text-xl text-gray-500 leading-relaxed mb-6">{data.expl}</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Tool Card */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
-                        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-4">Recommended Tool</h2>
-                        <div className="flex-1">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2">{data.toolName}</h3>
-                            <p className="text-gray-600 mb-6">{data.toolWhy}</p>
-                        </div>
-                        <a
-                            href={data.toolUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center w-full py-3 px-4 bg-gray-900 text-white rounded-lg font-medium hover:bg-black transition-colors"
-                        >
-                            Open {data.toolName} <ExternalLink className="w-4 h-4 ml-2" />
-                        </a>
-
-                        {/* Alternatives Section (Collapsed by default) */}
-                        {data.alternatives && (
-                            <div className="mt-4 border-t border-gray-100 pt-4">
-                                <button
-                                    onClick={() => setShowAlternatives(!showAlternatives)}
-                                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors w-full"
-                                >
-                                    {showAlternatives ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                    {showAlternatives ? 'Hide Alternatives' : 'Show Tool Alternatives'}
-                                </button>
-
-                                {showAlternatives && (
-                                    <div className="mt-3 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
-                                        {data.alternatives.map((alt, i) => (
-                                            <div key={i} className="flex justify-between items-start bg-gray-50 p-3 rounded-lg">
-                                                <div>
-                                                    <div className="font-semibold text-gray-900 text-sm">{alt.name}</div>
-                                                    <div className="text-xs text-gray-500">{alt.why}</div>
-                                                </div>
-                                                <a href={alt.url} target="_blank" rel="noopener" className="text-gray-400 hover:text-gray-700">
-                                                    <ExternalLink className="w-3 h-3" />
-                                                </a>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                        {data.warning && (
+                            <div className="mt-6 p-4 bg-amber-50 border border-amber-100 rounded-2xl flex gap-3 text-amber-800 text-sm font-medium">
+                                <AlertCircle className="w-5 h-5 shrink-0" />
+                                {data.warning}
                             </div>
                         )}
-                    </div>
+                    </section>
 
-                    {/* Functional Checklist */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Action Plan</h2>
-                            <span className="text-sm font-medium text-gray-900">{Math.round(progress)}% Done</span>
+                    <section className="bg-gray-50 rounded-[2.5rem] p-10 border border-gray-100">
+                        <div className="flex justify-between items-center mb-8">
+                            <h2 className="text-2xl font-bold">Recommended Resource</h2>
+                            <a href={data.toolUrl} target="_blank" className="text-black font-bold hover:underline flex items-center gap-2">
+                                Open Tool <ExternalLink className="w-4 h-4" />
+                            </a>
                         </div>
-
-                        <div className="w-full bg-gray-100 rounded-full h-2 mb-6">
-                            <div
-                                className="bg-green-500 h-2 rounded-full transition-all duration-500 ease-out"
-                                style={{ width: `${progress}%` }}
-                            />
+                        <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm mb-6 text-center lg:text-left overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-4 opacity-5">
+                                <GitBranch className="w-20 h-20" />
+                            </div>
+                            <h3 className="text-3xl font-black mb-2">{data.toolName}</h3>
+                            <p className="text-gray-500 text-lg mb-8">{data.toolWhy}</p>
+                            <button onClick={() => setShowAlternatives(!showAlternatives)} className="text-gray-400 text-sm font-bold flex items-center gap-2 hover:text-gray-600">
+                                {showAlternatives ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />} Tool Alternatives
+                            </button>
                         </div>
+                        {showAlternatives && data.alternatives && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2">
+                                {data.alternatives.map((alt, i) => (
+                                    <a key={i} href={alt.url} target="_blank" className="p-4 bg-white rounded-2xl border border-gray-100 hover:border-gray-900/10 hover:shadow-lg transition-all flex justify-between items-center group">
+                                        <div>
+                                            <div className="font-bold text-gray-900">{alt.name}</div>
+                                            <div className="text-xs text-gray-400">{alt.why}</div>
+                                        </div>
+                                        <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-black transition-colors" />
+                                    </a>
+                                ))}
+                            </div>
+                        )}
+                    </section>
 
-                        <ul className="space-y-3 flex-1 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-                            {data.checklist.map((item, i) => (
-                                <li
-                                    key={i}
-                                    className={`group flex items-start gap-3 p-2 rounded-lg transition-colors cursor-pointer select-none ${checkedItems[i] ? 'bg-gray-50' : 'hover:bg-gray-50'}`}
-                                    onClick={() => handleCheck(i)}
-                                >
-                                    <div className={`mt-0.5 min-w-5 w-5 h-5 rounded border flex items-center justify-center transition-colors ${checkedItems[i]
-                                        ? 'bg-green-500 border-green-500 text-white'
-                                        : 'border-gray-300 bg-white group-hover:border-gray-400'
-                                        }`}>
-                                        {checkedItems[i] && <Check className="w-3.5 h-3.5" />}
-                                    </div>
-                                    <span className={`text-sm leading-snug transition-all ${checkedItems[i] ? 'text-gray-400 line-through' : 'text-gray-700'
-                                        }`}>
-                                        {item}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-
-                {/* Prompt Section */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">Best Prompt</h2>
-                        <button
-                            onClick={handleCopy}
-                            className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-                        >
-                            {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-                            {copied ? 'Copied' : 'Copy'}
-                        </button>
-                    </div>
-                    <div className="relative">
-                        <div className="relative">
+                    <section>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold">The Golden Prompt</h2>
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(displayPrompt);
+                                    setShowCopyFeedback(true);
+                                    setTimeout(() => setShowCopyFeedback(false), 2000);
+                                }}
+                                className="text-black font-bold text-sm bg-gray-100 px-4 py-2 rounded-xl hover:bg-gray-200 transition-all flex items-center gap-2"
+                            >
+                                {showCopyFeedback ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                                {showCopyFeedback ? "Copied!" : "Copy Prompt"}
+                            </button>
+                        </div>
+                        <div className="relative group">
                             <textarea
                                 value={displayPrompt}
                                 onChange={handlePromptChange}
-                                className={`w-full h-96 p-4 rounded-lg bg-gray-50 border text-gray-800 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900/20 transition-all ${isEdited ? 'border-amber-200 bg-amber-50/30' : 'border-gray-200'}`}
-                                placeholder="Edit this prompt..."
+                                className={`w-full h-80 p-8 rounded-[2rem] bg-gray-900 text-gray-100 font-mono text-sm leading-relaxed border-4 border-transparent focus:border-gray-700/30 selection:bg-gray-700 selection:text-white transition-all outline-none ${isEdited ? 'border-gray-700/20 shadow-2xl shadow-gray-200' : ''}`}
                             />
                             {isEdited && (
-                                <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                                    <span className="text-xs text-amber-600 font-medium px-2 py-1 bg-amber-100 rounded">Edited</span>
-                                    <button onClick={handleResetPrompt} className="text-xs text-gray-500 hover:text-gray-900 underline">Reset</button>
-                                </div>
+                                <button onClick={() => setCustomPrompt(null)} className="absolute bottom-6 right-6 text-xs font-bold text-gray-400 hover:text-gray-300 underline">Reset to Default</button>
                             )}
                         </div>
-                    </div>
+                    </section>
                 </div>
 
-                {data.docsUrl && (
-                    <div className="text-center">
-                        <a href={data.docsUrl} target="_blank" rel="noopener" className="text-sm text-gray-500 hover:text-gray-900 underline underline-offset-4">
-                            View Official Documentation
-                        </a>
-                    </div>
-                )}
+                <div className="space-y-12">
+                    {/* Action Plan */}
+                    <section className="bg-white rounded-[2rem] border-2 border-gray-900 p-8 shadow-2xl shadow-gray-200">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-black uppercase tracking-tighter">Action Plan</h2>
+                            <span className="text-2xl font-black">{Math.round(progress)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-100 h-3 rounded-full mb-8 overflow-hidden">
+                            <div className="h-full bg-gray-900 transition-all duration-1000" style={{ width: `${progress}%` }} />
+                        </div>
+                        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                            {data.checklist.map((item, i) => (
+                                <div
+                                    key={i}
+                                    onClick={() => handleCheck(i)}
+                                    className={`flex items-start gap-4 p-4 rounded-xl cursor-pointer transition-all border ${checkedItems[i] ? 'bg-gray-50 border-transparent' : 'bg-white border-gray-100 hover:border-gray-900'}`}
+                                >
+                                    <div className={`mt-0.5 w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition-all ${checkedItems[i] ? 'bg-gray-900 border-gray-900 text-white' : 'border-gray-200'}`}>
+                                        {checkedItems[i] && <Check className="w-4 h-4" />}
+                                    </div>
+                                    <span className={`text-sm font-bold leading-tight ${checkedItems[i] ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{item}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
 
+                    {/* Team Comments */}
+                    <section className="bg-gray-50 rounded-[2rem] p-8 border border-gray-100">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <MessageSquare className="w-5 h-5" /> Team Chat
+                        </h2>
+                        <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
+                            {comments.length === 0 ? (
+                                <p className="text-gray-400 text-sm italic py-4 text-center font-medium">No comments yet. Start the conversation!</p>
+                            ) : (
+                                comments.map((c, i) => (
+                                    <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className="w-5 h-5 bg-gray-100 rounded-full flex items-center justify-center text-[10px] font-black text-gray-900">
+                                                {c.user[0].toUpperCase()}
+                                            </div>
+                                            <span className="text-xs font-black text-gray-900">{c.user}</span>
+                                            <span className="text-[10px] text-gray-400 ml-auto">{new Date(c.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                        <p className="text-sm text-gray-600 font-medium">{c.text}</p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <form onSubmit={handleAddComment} className="relative">
+                            <input
+                                type="text"
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                placeholder="Add a note for the team..."
+                                className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-4 pr-12 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-gray-900/5 focus:border-gray-900 transition-all shadow-inner"
+                            />
+                            <button type="submit" className="absolute right-2 top-2 p-1.5 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors">
+                                <Send className="w-4 h-4" />
+                            </button>
+                        </form>
+                    </section>
+                </div>
             </main>
-        </div>
-    );
-}
 
-function GitModule({ onBack }: { onBack: () => void }) {
-    const [activeTab, setActiveTab] = useState<'setup' | 'daily' | 'team'>('setup');
-
-    const tabs = [
-        { id: 'setup', label: 'Quick Setup' },
-        { id: 'daily', label: 'Daily Commands' },
-        { id: 'team', label: 'Team Collab' },
-    ];
-
-    return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <header className="bg-white border-b border-gray-100 py-4 px-6 flex items-center gap-4 sticky top-0 z-10">
-                <button onClick={onBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-500 hover:text-gray-900">
-                    <ArrowLeft className="w-5 h-5" />
-                </button>
-                <h1 className="text-xl font-bold flex items-center gap-2 text-gray-900">
-                    Git & GitHub
-                </h1>
-            </header>
-
-            <div className="max-w-4xl mx-auto w-full p-6 sm:p-8">
-                <div className="flex space-x-1 bg-gray-200/50 p-1 rounded-lg mb-8 w-fit mx-auto sm:mx-0">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as any)}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === tab.id
-                                ? 'bg-white text-gray-900 shadow-sm'
-                                : 'text-gray-500 hover:text-gray-700'
-                                }`}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 min-h-[400px]">
-                    {activeTab === 'setup' && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <h2 className="text-lg font-semibold text-gray-900">First Time Setup</h2>
-                            <p className="text-gray-600">Run these once to configure your identity.</p>
-
-                            <CodeBlock code={`git config --global user.name "Your Name"\ngit config --global user.email "you@example.com"`} />
-
-                            <div className="mt-8 pt-6 border-t border-gray-100">
-                                <a href="https://git-scm.com/downloads" target="_blank" rel="noopener" className="text-blue-600 hover:underline flex items-center gap-2">
-                                    Download Git <ExternalLink className="w-3 h-3" />
-                                </a>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'daily' && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <h2 className="text-lg font-semibold text-gray-900">The Loop</h2>
-                            <p className="text-gray-600">Do this every time you finish a feature.</p>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <span className="text-xs font-semibold text-gray-400 uppercase">1. Stage Changes</span>
-                                    <CodeBlock code="git add ." />
-                                </div>
-                                <div>
-                                    <span className="text-xs font-semibold text-gray-400 uppercase">2. Commit</span>
-                                    <CodeBlock code='git commit -m "added login page"' />
-                                </div>
-                                <div>
-                                    <span className="text-xs font-semibold text-gray-400 uppercase">3. Push</span>
-                                    <CodeBlock code="git push origin main" />
-                                </div>
-                                <div>
-                                    <span className="text-xs font-semibold text-gray-400 uppercase">4. Pull (if teammates pushed)</span>
-                                    <CodeBlock code="git pull origin main" />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'team' && (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <h2 className="text-lg font-semibold text-gray-900">Working Together</h2>
-
-                            <div className="grid gap-6">
-                                <div>
-                                    <h3 className="font-medium text-gray-900 mb-2 flex items-center gap-2"><Users className="w-4 h-4" /> Clone Repository</h3>
-                                    <p className="text-sm text-gray-500 mb-2">Get the code on a new machine.</p>
-                                    <CodeBlock code="git clone <repo-url>" />
-                                </div>
-
-                                <div>
-                                    <h3 className="font-medium text-gray-900 mb-2 flex items-center gap-2"><GitBranch className="w-4 h-4" /> Create Branch</h3>
-                                    <p className="text-sm text-gray-500 mb-2">Work on a feature safely.</p>
-                                    <CodeBlock code="git checkout -b feature-name" />
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function CodeBlock({ code }: { code: string }) {
-    const [copied, setCopied] = useState(false);
-    const handleCopy = () => {
-        navigator.clipboard.writeText(code);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    return (
-        <div className="relative group mt-2">
-            <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
-                {code}
-            </pre>
-            <button
-                onClick={handleCopy}
-                className="absolute top-3 right-3 p-2 bg-gray-800 text-gray-300 rounded hover:bg-gray-700 opacity-0 group-hover:opacity-100 transition-all"
-                title="Copy"
-            >
-                {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
-            </button>
+            <PromptModal
+                isOpen={showNamePrompt}
+                onClose={() => setShowNamePrompt(false)}
+                onSubmit={submitComment}
+                title="Enter your name"
+                placeholder="Your name..."
+            />
         </div>
     );
 }
