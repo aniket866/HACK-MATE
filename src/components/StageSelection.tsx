@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Lightbulb,
     Search,
@@ -10,9 +10,13 @@ import {
     Share2,
     X,
     Copy,
-    Check
+    Check,
+    Sparkles,
+    UserPlus,
+    User
 } from 'lucide-react';
 import { store } from '../lib/store';
+import { PromptModal } from './PromptModal';
 
 export interface Stage {
     id: string;
@@ -32,6 +36,7 @@ export const STAGES: Stage[] = [
     { id: 'research', title: 'Market Research', icon: <Search className="w-6 h-6" /> },
     { id: 'design', title: 'UI / UX Design', icon: <Palette className="w-6 h-6" /> },
     { id: 'build', title: 'Website / App Build', icon: <Layout className="w-6 h-6" /> },
+    { id: 'antigravity', title: 'AI Coding (Antigravity)', icon: <Sparkles className="w-6 h-6" /> },
     { id: 'git', title: 'Git & GitHub', icon: <GitBranch className="w-6 h-6" /> },
     { id: 'pitch', title: 'PPT / Pitch Deck', icon: <Presentation className="w-6 h-6" /> },
     { id: 'submit', title: 'Demo & Submission', icon: <Upload className="w-6 h-6" /> },
@@ -42,10 +47,18 @@ export function StageSelection({ onSelectStage, projectName, onHome, projectId }
     const [shareUrl, setShareUrl] = useState('');
     const [copied, setCopied] = useState(false);
 
+    // Assignments State
+    const [assignments, setAssignments] = useState<Record<string, string>>({});
+    const [assigningStage, setAssigningStage] = useState<string | null>(null);
+
+    useEffect(() => {
+        const state = store.getProjectState(projectId);
+        setAssignments(state.assignments || {});
+    }, [projectId]);
+
     const handleShare = () => {
         const encoded = store.exportProject(projectId);
         if (encoded) {
-            // Construct URL
             const url = `${window.location.origin}?share=${encoded}`;
             setShareUrl(url);
             setShowShare(true);
@@ -57,78 +70,143 @@ export function StageSelection({ onSelectStage, projectName, onHome, projectId }
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
+
+    const handleAssign = (stageId: string, name: string) => {
+        store.updateAssignment(projectId, stageId, name);
+        setAssignments(prev => ({ ...prev, [stageId]: name }));
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 p-6 sm:p-12">
-            <div className="max-w-5xl mx-auto">
-                <header className="mb-12 flex items-end justify-between">
+        <div className="min-h-screen bg-white p-6 sm:p-12">
+            <div className="max-w-7xl mx-auto">
+                <header className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
-                        <p className="text-sm font-medium text-gray-500 mb-2 uppercase tracking-wide">Current Project</p>
-                        <h1 className="text-3xl font-bold text-gray-900">{projectName}</h1>
+                        <div className="flex items-center gap-2 text-gray-900 font-bold text-xs uppercase tracking-widest mb-2">
+                            <Sparkles className="w-3 h-3" /> Active Project
+                        </div>
+                        <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">{projectName}</h1>
+                        <p className="text-gray-500 mt-2 font-medium">Click on a phase to start working on your roadmap.</p>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={onHome}
-                            className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
+                            className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-6 py-3 rounded-2xl font-bold transition-all text-sm"
                         >
-                            Back to Home
+                            Dashboard
                         </button>
-                        {/* Share Button (Subtle) */}
                         <button
                             onClick={handleShare}
-                            className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors ml-6"
+                            className="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-gray-200 flex items-center gap-2 text-sm"
                         >
-                            <Share2 className="w-4 h-4" /> Share
+                            <UserPlus className="w-4 h-4" /> Invite Teammate
                         </button>
                     </div>
                 </header>
 
                 {/* Share Modal */}
                 {showShare && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/20 backdrop-blur-sm animate-in fade-in duration-200">
-                        <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 border border-gray-100 relative" onClick={(e) => e.stopPropagation()}>
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-md animate-in fade-in duration-300">
+                        <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg p-10 border border-gray-100 relative overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full -mr-16 -mt-16 -z-10" />
+
                             <button
                                 onClick={() => setShowShare(false)}
-                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                                className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full transition-colors"
                             >
-                                <X className="w-4 h-4" />
+                                <X className="w-5 h-5 text-gray-400" />
                             </button>
 
-                            <h3 className="text-lg font-bold text-gray-900 mb-2">Share Workspace</h3>
-                            <p className="text-sm text-gray-500 mb-6">Anyone with this link can access a read-only copy of your workspace state.</p>
+                            <div className="mb-8">
+                                <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-900 mb-6">
+                                    <Share2 className="w-8 h-8" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Invite your team</h3>
+                                <p className="text-gray-500 font-medium">Copy this link to share your project roadmap and collaborate in real-time.</p>
+                            </div>
 
-                            <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
-                                <input
-                                    type="text"
-                                    readOnly
-                                    value={shareUrl}
-                                    className="bg-transparent border-none text-xs text-gray-600 w-full focus:ring-0 truncate font-mono select-all"
-                                />
-                                <button
-                                    onClick={handleCopy}
-                                    className="p-2 hover:bg-white rounded-md shadow-sm border border-transparent hover:border-gray-200 transition-all"
-                                >
-                                    {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-gray-500" />}
-                                </button>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-2xl border border-gray-200">
+                                    <div className="flex-1 truncate font-mono text-sm text-gray-500">
+                                        {shareUrl}
+                                    </div>
+                                    <button
+                                        onClick={handleCopy}
+                                        className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${copied ? 'bg-green-600 text-white' : 'bg-gray-900 text-white hover:bg-black'}`}
+                                    >
+                                        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                                        {copied ? 'Copied' : 'Copy Link'}
+                                    </button>
+                                </div>
+                                <p className="text-center text-xs text-gray-400 font-medium italic">NOTE: Link contains encoded project data. Large projects may have very long links.</p>
                             </div>
                         </div>
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {STAGES.map((stage) => (
-                        <button
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {STAGES.map((stage, i) => (
+                        <div
                             key={stage.id}
+                            className="group relative bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-gray-900/10 hover:border-gray-900/20 hover:-translate-y-2 transition-all duration-500 cursor-pointer animate-in fade-in slide-in-from-bottom-6"
+                            style={{ animationDelay: `${i * 100}ms` }}
                             onClick={() => onSelectStage(stage.id)}
-                            className="bg-white p-6 rounded-xl border border-gray-100 shadow-[0_2px_8px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all text-left group"
                         >
-                            <div className="w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center text-gray-900 mb-4 group-hover:bg-gray-900 group-hover:text-white transition-colors">
-                                {stage.icon}
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-900 group-hover:bg-black group-hover:text-white transition-all duration-500 group-hover:rotate-6 group-hover:scale-110">
+                                    {stage.icon}
+                                </div>
+                                {assignments[stage.id] && (
+                                    <div
+                                        className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-900 px-3 py-1.5 rounded-full text-xs font-bold ring-4 ring-white transition-colors cursor-pointer"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setAssigningStage(stage.id);
+                                        }}
+                                        title="Click to edit assignment"
+                                    >
+                                        <User className="w-3 h-3" />
+                                        {assignments[stage.id]}
+                                    </div>
+                                )}
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-900">{stage.title}</h3>
-                        </button>
+
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">{stage.title}</h3>
+                            <p className="text-gray-400 text-sm font-medium mb-6">Phase {i + 1} of 8</p>
+
+                            <div className="flex items-center justify-between pt-6 border-t border-gray-50 group-hover:border-gray-200 transition-colors">
+                                <span className="text-xs font-bold text-gray-300 group-hover:text-gray-900 transition-colors flex items-center gap-2">
+                                    View Phase <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                                </span>
+
+                                {/* Quick Assign (Simulated) */}
+                                <div className="relative group/assign" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                        onClick={() => setAssigningStage(stage.id)}
+                                        className="p-2 bg-gray-50 hover:bg-gray-100 text-gray-400 hover:text-gray-900 rounded-lg transition-all border border-transparent hover:border-gray-200"
+                                    >
+                                        <UserPlus className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     ))}
                 </div>
+
+                <PromptModal
+                    isOpen={assigningStage !== null}
+                    onClose={() => setAssigningStage(null)}
+                    onSubmit={(name) => {
+                        if (assigningStage) handleAssign(assigningStage, name);
+                    }}
+                    title={assigningStage && assignments[assigningStage] ? "Edit assignment" : "Assign to your mate"}
+                    placeholder="Enter teammate name..."
+                    defaultValue={assigningStage ? assignments[assigningStage] : ''}
+                />
             </div>
         </div>
     );
+}
+
+function ArrowRight({ className }: { className?: string }) {
+    return <svg className={className} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>;
 }
