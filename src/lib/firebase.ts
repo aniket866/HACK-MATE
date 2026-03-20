@@ -5,9 +5,7 @@ import {
   signInWithPopup, 
   signOut, 
   onAuthStateChanged, 
-  User, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
+  User 
 } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
@@ -52,8 +50,6 @@ export {
   googleProvider, 
   signInWithPopup, 
   signOut, 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
+  onAuthStateChanged 
 };
 export type { User };

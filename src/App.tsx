@@ -21,9 +21,7 @@ import {
   User, 
   signInWithPopup, 
   googleProvider, 
-  signOut, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
+  signOut 
 } from './lib/firebase';
 
 function App() {
@@ -47,23 +45,7 @@ function App() {
     }
   };
 
-  const handleEmailLogin = async (email: string, pass: string) => {
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-    } catch (error) {
-       console.error("Login failed:", error);
-       throw error;
-    }
-  };
 
-  const handleEmailSignup = async (email: string, pass: string) => {
-    try {
-      await createUserWithEmailAndPassword(auth, email, pass);
-    } catch (error) {
-       console.error("Signup failed:", error);
-       throw error;
-    }
-  };
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -229,8 +211,6 @@ function App() {
       {stage === 'auth-required' && (
         <AuthStage
           onLogin={handleLogin}
-          onEmailLogin={handleEmailLogin}
-          onEmailSignup={handleEmailSignup}
           onBack={() => {
             setPendingAction(null);
             setStage('landing');
