@@ -6,16 +6,64 @@ import { StageDetail } from "./components/StageDetail";
 import { AntigravityGuide } from "./components/AntigravityGuide";
 import { store } from "./lib/store";
 
-type AppStage = 'landing' | 'setup' | 'selection' | 'detail' | 'guide' | 'how-it-works' | 'features' | 'faq' | 'resources' | 'case-studies';
+type AppStage = 'landing' | 'auth-required' | 'setup' | 'selection' | 'detail' | 'guide' | 'how-it-works' | 'features' | 'faq' | 'resources' | 'case-studies';
 
 import { HowItWorks } from "./components/HowItWorks";
 import { Features } from "./components/Features";
 import { FAQ } from "./components/FAQ";
 import { Resources } from "./components/Resources";
 import { CaseStudies } from "./components/CaseStudies";
+import { AuthStage } from "./components/AuthStage";
+
+import { 
+  auth, 
+  onAuthStateChanged, 
+  User, 
+  signInWithPopup, 
+  googleProvider, 
+  signOut, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword 
+} from './lib/firebase';
 
 function App() {
   const [stage, setStage] = useState<AppStage>('landing');
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
+  };
+
+  const handleEmailLogin = async (email: string, pass: string) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch (error) {
+       alert("Login failed: " + (error as Error).message);
+    }
+  };
+
+  const handleEmailSignup = async (email: string, pass: string) => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    } catch (error) {
+       alert("Signup failed: " + (error as Error).message);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
 
   // Handle Shared Link Import
   useEffect(() => {
@@ -64,13 +112,25 @@ function App() {
 
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
 
+  const [pendingAction, setPendingAction] = useState<{ stage: AppStage; data?: any } | null>(null);
+
   // Handlers
   const handlePromptSubmit = (value: string) => {
+    if (!user) {
+      setPendingAction({ stage: 'setup', data: value });
+      setStage('auth-required');
+      return;
+    }
     setProjectData(prev => ({ ...prev, problem: value }));
     setStage('setup');
   };
 
   const handleResumeProject = (project: any) => {
+    if (!user) {
+      setPendingAction({ stage: 'selection', data: project });
+      setStage('auth-required');
+      return;
+    }
     setProjectId(project.id);
     setProjectData({
       name: project.name,
@@ -107,6 +167,20 @@ function App() {
     setStage('selection');
   };
 
+  useEffect(() => {
+    if (user && pendingAction) {
+       const action = pendingAction;
+       setPendingAction(null);
+       if (action.stage === 'setup') {
+          handlePromptSubmit(action.data);
+       } else if (action.stage === 'selection') {
+          handleResumeProject(action.data);
+       } else {
+          setStage(action.stage);
+       }
+    }
+  }, [user, pendingAction]);
+
   const handleSelectStage = (id: string) => {
     setSelectedStageId(id);
     setStage('detail');
@@ -118,12 +192,45 @@ function App() {
         <HeroWave
           onPromptSubmit={handlePromptSubmit}
           onResumeProject={handleResumeProject}
-          onOpenGuide={() => setStage('guide')}
-          onOpenFeatures={() => setStage('features')}
-          onOpenHowItWorks={() => setStage('how-it-works')}
-          onOpenFAQ={() => setStage('faq')}
-          onOpenResources={() => setStage('resources')}
-          onOpenCaseStudies={() => setStage('case-studies')}
+          onOpenGuide={() => {
+            if (!user) { setPendingAction({ stage: 'guide' }); setStage('auth-required'); return; }
+            setStage('guide');
+          }}
+          onOpenFeatures={() => {
+            if (!user) { setPendingAction({ stage: 'features' }); setStage('auth-required'); return; }
+            setStage('features');
+          }}
+          onOpenHowItWorks={() => {
+            if (!user) { setPendingAction({ stage: 'how-it-works' }); setStage('auth-required'); return; }
+            setStage('how-it-works');
+          }}
+          onOpenFAQ={() => {
+            if (!user) { setPendingAction({ stage: 'faq' }); setStage('auth-required'); return; }
+            setStage('faq');
+          }}
+          onOpenResources={() => {
+            if (!user) { setPendingAction({ stage: 'resources' }); setStage('auth-required'); return; }
+            setStage('resources');
+          }}
+          onOpenCaseStudies={() => {
+            if (!user) { setPendingAction({ stage: 'case-studies' }); setStage('auth-required'); return; }
+            setStage('case-studies');
+          }}
+          user={user}
+          onLogin={handleLogin}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {stage === 'auth-required' && (
+        <AuthStage
+          onLogin={handleLogin}
+          onEmailLogin={handleEmailLogin}
+          onEmailSignup={handleEmailSignup}
+          onBack={() => {
+            setPendingAction(null);
+            setStage('landing');
+          }}
         />
       )}
 
