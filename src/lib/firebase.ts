@@ -12,13 +12,13 @@ import {
 import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBCCRuXyyVaYdpWXo-Mw1lT1oisPdsxUCY",
-  authDomain: "hackbro-f307d.firebaseapp.com",
-  projectId: "hackbro-f307d",
-  storageBucket: "hackbro-f307d.firebasestorage.app",
-  messagingSenderId: "716666739822",
-  appId: "1:716666739822:web:a23355027029f501b59a7f",
-  measurementId: "G-1CHD2TXPGY"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
