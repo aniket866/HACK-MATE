@@ -11,6 +11,11 @@ import {
 } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
+/**
+ * Firebase configuration retrieved from Vite Environment Variables.
+ * This ensures that sensitive keys are kept out of the source code and version control.
+ * See .env for local development and your deployment dashboard for production.
+ */
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
