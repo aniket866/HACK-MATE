@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 import { ArrowRight, Code2, Sparkles, Zap, LayoutTemplate, GitGraph, Box, Clock } from "lucide-react";
 import { store, Project } from "../../lib/store";
 
+import { User } from "../../lib/firebase";
+
 export type HeroWaveProps = {
     onPromptSubmit?: (value: string) => void;
     onResumeProject?: (project: Project) => void;
@@ -12,9 +14,24 @@ export type HeroWaveProps = {
     onOpenFAQ?: () => void;
     onOpenResources?: () => void;
     onOpenCaseStudies?: () => void;
+    user?: User | null;
+    onLogin?: () => void;
+    onLogout?: () => void;
 };
 
-export function HeroWave({ onPromptSubmit, onResumeProject, onOpenGuide, onOpenFeatures, onOpenHowItWorks, onOpenFAQ, onOpenResources, onOpenCaseStudies }: HeroWaveProps) {
+export function HeroWave({ 
+    onPromptSubmit, 
+    onResumeProject, 
+    onOpenGuide, 
+    onOpenFeatures, 
+    onOpenHowItWorks, 
+    onOpenFAQ, 
+    onOpenResources, 
+    onOpenCaseStudies,
+    user,
+    onLogin,
+    onLogout
+}: HeroWaveProps) {
     const [prompt, setPrompt] = useState("");
     const [recentProjects, setRecentProjects] = useState<Project[]>([]);
 
@@ -73,13 +90,29 @@ export function HeroWave({ onPromptSubmit, onResumeProject, onOpenGuide, onOpenF
                     </div>
                     <span>Hackathon Copilot</span>
                 </div>
-                <div className="hidden sm:flex items-center gap-6 text-sm font-medium text-gray-600">
+                <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-gray-600">
                     <button onClick={onOpenHowItWorks} className="hover:text-gray-900 transition-colors">How it Works</button>
                     <button onClick={onOpenFeatures} className="hover:text-gray-900 transition-colors">Features</button>
                     <button onClick={onOpenResources} className="hover:text-gray-900 transition-colors">Resources</button>
                     <button onClick={onOpenCaseStudies} className="hover:text-gray-900 transition-colors">Success Stories</button>
                     <button onClick={onOpenGuide} className="hover:text-gray-900 transition-colors">Guide</button>
                     <button onClick={onOpenFAQ} className="hover:text-gray-900 transition-colors">FAQ</button>
+                    <div className="h-4 w-px bg-gray-200 mx-2" />
+                    {user ? (
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                {user.photoURL && <img src={user.photoURL} alt={user.displayName || ""} className="w-8 h-8 rounded-full border border-gray-200" />}
+                                <span className="text-gray-900 font-bold">{user.displayName?.split(' ')[0]}</span>
+                            </div>
+                            <button onClick={onLogout} className="px-4 py-2 rounded-full border border-gray-200 hover:bg-gray-50 transition-colors text-gray-600">
+                                Sign Out
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={onLogin} className="px-6 py-2 rounded-full bg-gray-900 hover:bg-black text-white font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-gray-900/20">
+                            Sign In
+                        </button>
+                    )}
                     <a href="https://github.com/anandmahadev/HackBro" target="_blank" rel="noreferrer" title="View on GitHub" className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors text-gray-900 group">
                         <GitGraph className="w-4 h-4 group-hover:rotate-12 transition-transform" /> GitHub
                     </a>
