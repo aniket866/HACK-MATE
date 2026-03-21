@@ -25,22 +25,22 @@ const config = {
 };
 
 try {
-  if (!config.apiKey || config.apiKey.includes('your_api_key')) {
-      throw new Error("VITE_FIREBASE_API_KEY is missing in .env file.");
-  }
-  
-  app = initializeApp(config);
-  auth = getAuth(app);
-  
-  if (typeof window !== 'undefined' && config.measurementId) {
-    try {
-      analytics = getAnalytics(app);
-    } catch (e) {
-      console.warn("Analytics initialization failed", e);
-    }
+  if (config.apiKey && !config.apiKey.includes('your_api_key')) {
+      app = initializeApp(config);
+      auth = getAuth(app);
+      
+      if (typeof window !== 'undefined' && config.measurementId) {
+        try {
+          analytics = getAnalytics(app);
+        } catch (e) {
+          console.warn("Analytics initialization failed", e);
+        }
+      }
+  } else {
+      console.warn("Firebase: API key is missing. Authentication features will be disabled. Check your environment variables.");
   }
 } catch (error: any) {
-  console.error("Firebase Security Error:", error.message);
+  console.error("Firebase Initialization Error:", error.message);
 }
 
 const googleProvider = new GoogleAuthProvider();
