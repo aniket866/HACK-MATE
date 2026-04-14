@@ -14,6 +14,7 @@ import { FAQ } from "./components/FAQ";
 import { Resources } from "./components/Resources";
 import { CaseStudies } from "./components/CaseStudies";
 import { AuthStage } from "./components/AuthStage";
+import { Footer } from "./components/Footer";
 
 import { 
   auth, 
@@ -283,6 +284,18 @@ function App() {
       {stage === 'case-studies' && (
         <CaseStudies
           onBack={() => setStage('landing')}
+        />
+      )}
+
+      {/* Persistent Footer for Landing and Info Stages */}
+      {(stage === 'landing' || stage === 'how-it-works' || stage === 'features' || stage === 'faq' || stage === 'resources' || stage === 'case-studies') && (
+        <Footer 
+          onOpenHowItWorks={() => setStage('how-it-works')}
+          onOpenFeatures={() => setStage('features')}
+          onOpenResources={() => setStage('resources')}
+          onOpenGuide={() => setStage('guide')}
+          onOpenFAQ={() => setStage('faq')}
+          onOpenCaseStudies={() => setStage('case-studies')}
         />
       )}
     </div>
