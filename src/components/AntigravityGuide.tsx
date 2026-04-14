@@ -1,12 +1,25 @@
 import { useState } from 'react';
-import { ArrowLeft, Check, Copy, Terminal, Github, Code2, Sparkles, AlertCircle, ExternalLink, Zap } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  Copy,
+  Terminal,
+  Github,
+  Code2,
+  Sparkles,
+  AlertCircle,
+  ExternalLink,
+  Zap,
+} from 'lucide-react';
 
 type GuideProps = {
   onBack: () => void;
 };
 
 export function AntigravityGuide({ onBack }: GuideProps) {
-  const [activeTab, setActiveTab] = useState<'what' | 'setup' | 'github' | 'workflow' | 'prompts'>('what');
+  const [activeTab, setActiveTab] = useState<'what' | 'setup' | 'github' | 'workflow' | 'prompts'>(
+    'what',
+  );
 
   const tabs = [
     { id: 'what', label: 'What & When', icon: <Sparkles className="w-4 h-4" /> },
@@ -44,17 +57,17 @@ export function AntigravityGuide({ onBack }: GuideProps) {
       </header>
 
       <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-8 sm:px-6">
-
         {/* Tabs */}
         <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-200 pb-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition-all border-b-2 ${activeTab === tab.id
-                ? 'border-gray-900 text-gray-900 bg-gray-50/50'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition-all border-b-2 ${
+                activeTab === tab.id
+                  ? 'border-gray-900 text-gray-900 bg-gray-50/50'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+              }`}
             >
               {tab.icon}
               {tab.label}
@@ -64,14 +77,13 @@ export function AntigravityGuide({ onBack }: GuideProps) {
 
         {/* Content Area */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 sm:p-10 min-h-[500px] animate-in fade-in slide-in-from-bottom-2 duration-300">
-
           {activeTab === 'what' && (
             <div className="max-w-3xl">
               <h2 className="text-2xl font-bold mb-6">What is Antigravity?</h2>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Antigravity is an AI engine designed to accelerate hackathon development.
-                Instead of writing boilerplate code manually, you describe your feature,
-                and Antigravity generates the file structure, configuration, and core logic.
+                Antigravity is an AI engine designed to accelerate hackathon development. Instead of
+                writing boilerplate code manually, you describe your feature, and Antigravity
+                generates the file structure, configuration, and core logic.
               </p>
 
               <div className="grid sm:grid-cols-2 gap-6 mb-8">
@@ -101,8 +113,8 @@ export function AntigravityGuide({ onBack }: GuideProps) {
               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h4 className="font-medium text-gray-900 mb-1">Core Philosophy</h4>
                 <p className="text-sm text-gray-600">
-                  Treat AI as a junior developer. It writes the first draft, but YOU are the architect who reviews,
-                  refines, and commits the code.
+                  Treat AI as a junior developer. It writes the first draft, but YOU are the
+                  architect who reviews, refines, and commits the code.
                 </p>
               </div>
             </div>
@@ -112,7 +124,9 @@ export function AntigravityGuide({ onBack }: GuideProps) {
             <div className="max-w-3xl space-y-8">
               <div>
                 <h2 className="text-2xl font-bold mb-2">Installation & Setup</h2>
-                <p className="text-gray-600">Follow these steps to initialize the engine in your local environment.</p>
+                <p className="text-gray-600">
+                  Follow these steps to initialize the engine in your local environment.
+                </p>
               </div>
 
               <div className="space-y-6">
@@ -165,8 +179,8 @@ export function AntigravityGuide({ onBack }: GuideProps) {
                 <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg flex gap-3 text-yellow-800 text-sm">
                   <AlertCircle className="w-5 h-5 shrink-0" />
                   <p>
-                    <strong>Warning:</strong> Always review AI code before pushing.
-                    Do not commit API keys or sensitive data. Check your .gitignore file.
+                    <strong>Warning:</strong> Always review AI code before pushing. Do not commit
+                    API keys or sensitive data. Check your .gitignore file.
                   </p>
                 </div>
 
@@ -186,12 +200,10 @@ export function AntigravityGuide({ onBack }: GuideProps) {
                   <CodeBlock code="git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git" />
                 </Step>
 
-                <Step
-                  number="3"
-                  title="Push Changes"
-                  desc="Save your work to the cloud."
-                >
-                  <CodeBlock code={`git add .\ngit commit -m "feat: initial AI setup"\ngit push -u origin main`} />
+                <Step number="3" title="Push Changes" desc="Save your work to the cloud.">
+                  <CodeBlock
+                    code={`git add .\ngit commit -m "feat: initial AI setup"\ngit push -u origin main`}
+                  />
                 </Step>
               </div>
             </div>
@@ -203,38 +215,46 @@ export function AntigravityGuide({ onBack }: GuideProps) {
 
               <div className="relative border-l-2 border-gray-200 ml-3 space-y-10 pl-8 py-2">
                 <div className="relative">
-                  <span className="absolute -left-[41px] top-0 w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm border border-gray-200">1</span>
+                  <span className="absolute -left-[41px] top-0 w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm border border-gray-200">
+                    1
+                  </span>
                   <h3 className="text-lg font-bold text-gray-900">Define</h3>
                   <p className="text-gray-600 mt-1">
-                    Write a clear, specific prompt describing exactly what you need.
-                    Include tech stack, libraries, and desired output format.
+                    Write a clear, specific prompt describing exactly what you need. Include tech
+                    stack, libraries, and desired output format.
                   </p>
                 </div>
 
                 <div className="relative">
-                  <span className="absolute -left-[41px] top-0 w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm border border-gray-200">2</span>
+                  <span className="absolute -left-[41px] top-0 w-8 h-8 rounded-full bg-gray-100 text-gray-900 flex items-center justify-center font-bold text-sm border border-gray-200">
+                    2
+                  </span>
                   <h3 className="text-lg font-bold text-gray-900">Generate</h3>
                   <p className="text-gray-600 mt-1">
-                    Run the Antigravity command or paste your prompt into the AI tool.
-                    Wait for the code generation to complete.
+                    Run the Antigravity command or paste your prompt into the AI tool. Wait for the
+                    code generation to complete.
                   </p>
                 </div>
 
                 <div className="relative">
-                  <span className="absolute -left-[41px] top-0 w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-sm border border-amber-200">3</span>
+                  <span className="absolute -left-[41px] top-0 w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-sm border border-amber-200">
+                    3
+                  </span>
                   <h3 className="text-lg font-bold text-gray-900">Review & Test</h3>
                   <p className="text-gray-600 mt-1">
-                    <strong>Crucial Step:</strong> Read the code. does it make sense?
-                    Run the app. Does it crash? Fix imports and syntax errors manually.
+                    <strong>Crucial Step:</strong> Read the code. does it make sense? Run the app.
+                    Does it crash? Fix imports and syntax errors manually.
                   </p>
                 </div>
 
                 <div className="relative">
-                  <span className="absolute -left-[41px] top-0 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm border border-green-200">4</span>
+                  <span className="absolute -left-[41px] top-0 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold text-sm border border-green-200">
+                    4
+                  </span>
                   <h3 className="text-lg font-bold text-gray-900">Commit</h3>
                   <p className="text-gray-600 mt-1">
-                    Once stable, commit the changes to Git. This creates a "save point"
-                    before you try the next feature.
+                    Once stable, commit the changes to Git. This creates a "save point" before you
+                    try the next feature.
                   </p>
                 </div>
               </div>
@@ -245,7 +265,6 @@ export function AntigravityGuide({ onBack }: GuideProps) {
             <div className="max-w-4xl">
               <h2 className="text-2xl font-bold mb-6">Ready-to-Use Prompts</h2>
               <div className="grid gap-6">
-
                 <PromptCard
                   title="Frontend Components"
                   desc="Generate beautiful, responsive UI components."
@@ -269,18 +288,26 @@ export function AntigravityGuide({ onBack }: GuideProps) {
                   desc="Fix those annoying bugs."
                   prompt="I am getting the following error in my React app: [PASTE_ERROR]. Here is the relevant code snippet: [PASTE_CODE]. Explain why this is happening and provide the corrected code."
                 />
-
               </div>
             </div>
           )}
-
         </div>
       </main>
     </div>
   );
 }
 
-function Step({ number, title, desc, children }: { number: string, title: string, desc: string, children?: React.ReactNode }) {
+function Step({
+  number,
+  title,
+  desc,
+  children,
+}: {
+  number: string;
+  title: string;
+  desc: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div className="flex gap-4">
       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 font-bold text-gray-500 flex items-center justify-center text-sm border border-gray-200">
@@ -319,7 +346,7 @@ function CodeBlock({ code }: { code: string }) {
   );
 }
 
-function PromptCard({ title, desc, prompt }: { title: string, desc: string, prompt: string }) {
+function PromptCard({ title, desc, prompt }: { title: string; desc: string; prompt: string }) {
   const [copied, setCopied] = useState(false);
   const handleCopy = () => {
     navigator.clipboard.writeText(prompt);

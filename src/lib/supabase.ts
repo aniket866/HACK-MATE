@@ -15,8 +15,10 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
  * Helper to check if Supabase is actually configured with real credentials
  */
 export const isSupabaseConfigured = () => {
-    return import.meta.env.VITE_SUPABASE_URL &&
-        import.meta.env.VITE_SUPABASE_ANON_KEY &&
-        import.meta.env.VITE_SUPABASE_URL !== 'your_supabase_url' &&
-        import.meta.env.VITE_SUPABASE_ANON_KEY !== 'your_supabase_anon_key';
+  return (
+    import.meta.env.VITE_SUPABASE_URL &&
+    import.meta.env.VITE_SUPABASE_ANON_KEY &&
+    import.meta.env.VITE_SUPABASE_URL !== 'your_supabase_url' &&
+    import.meta.env.VITE_SUPABASE_ANON_KEY !== 'your_supabase_anon_key'
+  );
 };

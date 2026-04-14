@@ -1,27 +1,38 @@
 import { useState, useEffect } from 'react';
-import { HeroWave } from "@/components/ui/ai-input-hero";
-import { ProjectSetup } from "./components/ProjectSetup";
-import { StageSelection } from "./components/StageSelection";
-import { StageDetail } from "./components/StageDetail";
-import { AntigravityGuide } from "./components/AntigravityGuide";
-import { store } from "./lib/store";
+import { HeroWave } from '@/components/ui/ai-input-hero';
+import { ProjectSetup } from './components/ProjectSetup';
+import { StageSelection } from './components/StageSelection';
+import { StageDetail } from './components/StageDetail';
+import { AntigravityGuide } from './components/AntigravityGuide';
+import { store } from './lib/store';
 
-type AppStage = 'landing' | 'auth-required' | 'setup' | 'selection' | 'detail' | 'guide' | 'how-it-works' | 'features' | 'faq' | 'resources' | 'case-studies';
+type AppStage =
+  | 'landing'
+  | 'auth-required'
+  | 'setup'
+  | 'selection'
+  | 'detail'
+  | 'guide'
+  | 'how-it-works'
+  | 'features'
+  | 'faq'
+  | 'resources'
+  | 'case-studies';
 
-import { HowItWorks } from "./components/HowItWorks";
-import { Features } from "./components/Features";
-import { FAQ } from "./components/FAQ";
-import { Resources } from "./components/Resources";
-import { CaseStudies } from "./components/CaseStudies";
-import { AuthStage } from "./components/AuthStage";
+import { HowItWorks } from './components/HowItWorks';
+import { Features } from './components/Features';
+import { FAQ } from './components/FAQ';
+import { Resources } from './components/Resources';
+import { CaseStudies } from './components/CaseStudies';
+import { AuthStage } from './components/AuthStage';
 
-import { 
-  auth, 
-  onAuthStateChanged, 
-  User, 
-  signInWithPopup, 
-  googleProvider, 
-  signOut 
+import {
+  auth,
+  onAuthStateChanged,
+  User,
+  signInWithPopup,
+  googleProvider,
+  signOut,
 } from './lib/firebase';
 
 function App() {
@@ -40,12 +51,10 @@ function App() {
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error('Login failed:', error);
       throw error;
     }
   };
-
-
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -60,7 +69,7 @@ function App() {
         const importedId = await store.importProject(shareCode);
         if (importedId) {
           const projects = await store.getProjects();
-          const project = projects.find(p => p.id === importedId);
+          const project = projects.find((p) => p.id === importedId);
           if (project) {
             setProjectId(importedId);
             setProjectData({
@@ -71,7 +80,7 @@ function App() {
               prizeCategory: project.prizeCategory || 'AI/ML Track',
               judgingFocus: project.judgingFocus || ['Innovation', 'Technical Complexity'],
               teamSize: project.teamSize || '2-3 people',
-              isTeam: project.isTeam ?? true
+              isTeam: project.isTeam ?? true,
             });
             setStage('selection');
             // Cleanup URL
@@ -93,7 +102,7 @@ function App() {
     prizeCategory: 'AI/ML Track',
     judgingFocus: ['Innovation', 'Technical Complexity'],
     teamSize: '2-3 people',
-    isTeam: true
+    isTeam: true,
   });
 
   const [selectedStageId, setSelectedStageId] = useState<string | null>(null);
@@ -107,7 +116,7 @@ function App() {
       setStage('auth-required');
       return;
     }
-    setProjectData(prev => ({ ...prev, problem: value }));
+    setProjectData((prev) => ({ ...prev, problem: value }));
     setStage('setup');
   };
 
@@ -126,7 +135,7 @@ function App() {
       prizeCategory: project.prizeCategory || 'AI/ML Track',
       judgingFocus: project.judgingFocus || ['Innovation', 'Technical Complexity'],
       teamSize: project.teamSize || '2-3 people',
-      isTeam: project.isTeam ?? true
+      isTeam: project.isTeam ?? true,
     });
     setStage('selection');
   };
@@ -146,7 +155,7 @@ function App() {
       id: newId,
       ...data,
       createdAt: Date.now(),
-      lastModified: Date.now()
+      lastModified: Date.now(),
     });
     setProjectId(newId);
     setProjectData(data);
@@ -155,15 +164,15 @@ function App() {
 
   useEffect(() => {
     if (user && pendingAction) {
-       const action = pendingAction;
-       setPendingAction(null);
-       if (action.stage === 'setup') {
-          handlePromptSubmit(action.data);
-       } else if (action.stage === 'selection') {
-          handleResumeProject(action.data);
-       } else {
-          setStage(action.stage);
-       }
+      const action = pendingAction;
+      setPendingAction(null);
+      if (action.stage === 'setup') {
+        handlePromptSubmit(action.data);
+      } else if (action.stage === 'selection') {
+        handleResumeProject(action.data);
+      } else {
+        setStage(action.stage);
+      }
     }
   }, [user, pendingAction]);
 
@@ -179,27 +188,51 @@ function App() {
           onPromptSubmit={handlePromptSubmit}
           onResumeProject={handleResumeProject}
           onOpenGuide={() => {
-            if (!user) { setPendingAction({ stage: 'guide' }); setStage('auth-required'); return; }
+            if (!user) {
+              setPendingAction({ stage: 'guide' });
+              setStage('auth-required');
+              return;
+            }
             setStage('guide');
           }}
           onOpenFeatures={() => {
-            if (!user) { setPendingAction({ stage: 'features' }); setStage('auth-required'); return; }
+            if (!user) {
+              setPendingAction({ stage: 'features' });
+              setStage('auth-required');
+              return;
+            }
             setStage('features');
           }}
           onOpenHowItWorks={() => {
-            if (!user) { setPendingAction({ stage: 'how-it-works' }); setStage('auth-required'); return; }
+            if (!user) {
+              setPendingAction({ stage: 'how-it-works' });
+              setStage('auth-required');
+              return;
+            }
             setStage('how-it-works');
           }}
           onOpenFAQ={() => {
-            if (!user) { setPendingAction({ stage: 'faq' }); setStage('auth-required'); return; }
+            if (!user) {
+              setPendingAction({ stage: 'faq' });
+              setStage('auth-required');
+              return;
+            }
             setStage('faq');
           }}
           onOpenResources={() => {
-            if (!user) { setPendingAction({ stage: 'resources' }); setStage('auth-required'); return; }
+            if (!user) {
+              setPendingAction({ stage: 'resources' });
+              setStage('auth-required');
+              return;
+            }
             setStage('resources');
           }}
           onOpenCaseStudies={() => {
-            if (!user) { setPendingAction({ stage: 'case-studies' }); setStage('auth-required'); return; }
+            if (!user) {
+              setPendingAction({ stage: 'case-studies' });
+              setStage('auth-required');
+              return;
+            }
             setStage('case-studies');
           }}
           user={user}
@@ -228,7 +261,7 @@ function App() {
 
       {stage === 'selection' && (
         <StageSelection
-          projectName={projectData.name || "Your Project"}
+          projectName={projectData.name || 'Your Project'}
           onSelectStage={handleSelectStage}
           onHome={() => setStage('landing')}
           onOpenResources={() => setStage('resources')}
@@ -245,46 +278,22 @@ function App() {
             id: projectId || 'temp',
             ...projectData,
             createdAt: Date.now(),
-            lastModified: Date.now()
+            lastModified: Date.now(),
           }}
         />
       )}
 
-      {stage === 'guide' && (
-        <AntigravityGuide
-          onBack={() => setStage('landing')}
-        />
-      )}
+      {stage === 'guide' && <AntigravityGuide onBack={() => setStage('landing')} />}
 
-      {stage === 'how-it-works' && (
-        <HowItWorks
-          onBack={() => setStage('landing')}
-        />
-      )}
+      {stage === 'how-it-works' && <HowItWorks onBack={() => setStage('landing')} />}
 
-      {stage === 'features' && (
-        <Features
-          onBack={() => setStage('landing')}
-        />
-      )}
+      {stage === 'features' && <Features onBack={() => setStage('landing')} />}
 
-      {stage === 'faq' && (
-        <FAQ
-          onBack={() => setStage('landing')}
-        />
-      )}
+      {stage === 'faq' && <FAQ onBack={() => setStage('landing')} />}
 
-      {stage === 'resources' && (
-        <Resources
-          onBack={() => setStage('landing')}
-        />
-      )}
+      {stage === 'resources' && <Resources onBack={() => setStage('landing')} />}
 
-      {stage === 'case-studies' && (
-        <CaseStudies
-          onBack={() => setStage('landing')}
-        />
-      )}
+      {stage === 'case-studies' && <CaseStudies onBack={() => setStage('landing')} />}
     </div>
   );
 }

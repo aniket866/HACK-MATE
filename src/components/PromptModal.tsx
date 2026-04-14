@@ -2,144 +2,120 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 interface PromptModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onSubmit: (value: string) => void;
-    title: string;
-    placeholder: string;
-    defaultValue?: string;
-    maxLength?: number;
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (value: string) => void;
+  title: string;
+  placeholder: string;
+  defaultValue?: string;
+  maxLength?: number;
 }
 
-export function PromptModal({ isOpen, onClose, onSubmit, title, placeholder, defaultValue = '', maxLength = 100 }: PromptModalProps) {
-    const [value, setValue] = useState(defaultValue);
-    const [error, setError] = useState(false);
+export function PromptModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  title,
+  placeholder,
+  defaultValue = '',
+  maxLength = 100,
+}: PromptModalProps) {
+  const [value, setValue] = useState(defaultValue);
+  const [error, setError] = useState(false);
 
-    useEffect(() => {
-        if (isOpen) {
-            setValue(defaultValue);
-            setError(false);
-        }
-    }, [isOpen, defaultValue]);
+  useEffect(() => {
+    if (isOpen) {
+      setValue(defaultValue);
+      setError(false);
+    }
+  }, [isOpen, defaultValue]);
 
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (value.length > maxLength) {
-            setError(true);
-            return;
-        }
-        if (value.trim()) {
-            onSubmit(value);
-            setValue('');
-            onClose();
-        }
-    };
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (value.length > maxLength) {
+      setError(true);
+      return;
+    }
+    if (value.trim()) {
+      onSubmit(value);
+      setValue('');
+      onClose();
+    }
+  };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newVal = e.target.value;
-        setValue(newVal);
-        if (newVal.length <= maxLength) {
-            setError(false);
-        } else {
-            setError(true);
-        }
-    };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVal = e.target.value;
+    setValue(newVal);
+    if (newVal.length <= maxLength) {
+      setError(false);
+    } else {
+      setError(true);
+    }
+  };
 
-    return (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose}>
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-md animate-in fade-in duration-300"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-8 border border-gray-100 relative overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full -mr-16 -mt-16 -z-10" />
+
+        <button
+          onClick={onClose}
+          className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <X className="w-5 h-5 text-gray-400" />
+        </button>
+
+        <h3 className="text-2xl font-bold text-gray-900 mb-6">{title}</h3>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="relative">
+            <input
+              type="text"
+              autoFocus
+              value={value}
+              onChange={handleChange}
+              placeholder={placeholder}
+              className={`w-full px-5 py-4 rounded-2xl border ${error ? 'border-red-500 focus:ring-red-100' : 'border-gray-200 focus:border-gray-900 focus:ring-gray-900/5'} focus:ring-4 transition-all text-gray-900 font-medium outline-none`}
+            />
             <div
-                className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-8 border border-gray-100 relative overflow-hidden animate-in zoom-in-95 duration-200"
-                onClick={(e) => e.stopPropagation()}
+              className={`absolute right-4 bottom-2 text-[10px] font-bold ${error ? 'text-red-500' : 'text-gray-400'}`}
             >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full -mr-16 -mt-16 -z-10" />
-
-                <button
-                    onClick={onClose}
-                    className="absolute top-6 right-6 p-2 hover:bg-gray-100 rounded-full transition-colors"
-                >
-                    <X className="w-5 h-5 text-gray-400" />
-                </button>
-
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">{title}</h3>
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="relative">
-                        <input
-                            type="text"
-                            autoFocus
-                            value={value}
-                            onChange={handleChange}
-                            placeholder={placeholder}
-                            className={`w-full px-5 py-4 rounded-2xl border ${error ? 'border-red-500 focus:ring-red-100' : 'border-gray-200 focus:border-gray-900 focus:ring-gray-900/5'} focus:ring-4 transition-all text-gray-900 font-medium outline-none`}
-                        />
-                        <div className={`absolute right-4 bottom-2 text-[10px] font-bold ${error ? 'text-red-500' : 'text-gray-400'}`}>
-                            {value.length}/{maxLength}
-                        </div>
-                    </div>
-                    {error && (
-                        <p className="text-red-500 text-xs font-bold animate-in fade-in slide-in-from-top-1">
-                            Character limit exceeded by {value.length - maxLength}!
-                        </p>
-                    )}
-                    <div className="flex gap-3 pt-2">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-all"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="flex-1 py-3 px-4 rounded-xl font-bold bg-gray-900 text-white hover:bg-black transition-all shadow-lg shadow-gray-200"
-                        >
-                            Confirm
-                        </button>
-                    </div>
-                </form>
+              {value.length}/{maxLength}
             </div>
-        </div>
-    );
+          </div>
+          {error && (
+            <p className="text-red-500 text-xs font-bold animate-in fade-in slide-in-from-top-1">
+              Character limit exceeded by {value.length - maxLength}!
+            </p>
+          )}
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 px-4 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 py-3 px-4 rounded-xl font-bold bg-gray-900 text-white hover:bg-black transition-all shadow-lg shadow-gray-200"
+            >
+              Confirm
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
 
 // build refinement iteration 1
 
