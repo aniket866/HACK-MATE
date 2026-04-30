@@ -345,29 +345,7 @@ export const store = {
         }
     },
 
-    findProjectByTeamId: async (teamId: string): Promise<Project | null> => {
-        if (!isSupabaseConfigured()) return null;
-        try {
-            const { data, error } = await supabase
-                .from('projects')
-                .select('*')
-                .eq('team_id', teamId)
-                .limit(1)
-                .maybeSingle();
-            
-            if (error) {
-                console.error("Supabase query error:", error);
-                return null;
-            }
-            if (!data) return null;
-            return data as Project;
-        } catch (e) {
-            console.error("Unexpected error in findProjectByTeamId:", e);
-            return null;
-        }
-    },
-
     isConfigured: async (): Promise<boolean> => {
-        return isSupabaseConfigured();
+        return !!isSupabaseConfigured();
     }
 };

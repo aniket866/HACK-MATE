@@ -107,8 +107,8 @@ export function StageSelection({ onSelectStage, projectName, onHome, onOpenResou
 
     const handleCopy = () => {
         navigator.clipboard.writeText(shareUrl);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setIdCopied(true);
+        setTimeout(() => setIdCopied(false), 2000);
     };
 
     const handleAssign = async (stageId: string, name: string) => {
